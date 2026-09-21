@@ -1,0 +1,1918 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Work Out">
+<meta name="theme-color" content="#111111">
+
+<title>Work Out V2</title>
+
+<style>
+* {
+  box-sizing: border-box;
+}
+
+:root {
+  --black: #111111;
+  --dark: #1c1c1e;
+  --gray: #747474;
+  --light: #f4f4f4;
+  --border: #dedede;
+  --white: #ffffff;
+  --green: #2e7d32;
+  --red: #b42318;
+}
+
+body {
+  margin: 0;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  background: #f6f6f6;
+  color: var(--black);
+}
+
+button,
+input,
+select {
+  font: inherit;
+}
+
+button {
+  cursor: pointer;
+}
+
+.app {
+  width: 100%;
+  max-width: 700px;
+  margin: auto;
+  min-height: 100vh;
+  background: var(--white);
+}
+
+.header {
+  padding: 22px 18px 14px;
+  background: var(--black);
+  color: white;
+}
+
+.header-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 15px;
+}
+
+.logo {
+  font-size: 25px;
+  font-weight: 900;
+  letter-spacing: 1px;
+}
+
+.version {
+  font-size: 11px;
+  opacity: .6;
+}
+
+.week-progress {
+  margin-top: 12px;
+  font-size: 13px;
+  opacity: .8;
+}
+
+.nav {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  border-bottom: 1px solid var(--border);
+  background: white;
+  position: sticky;
+  top: 0;
+  z-index: 20;
+}
+
+.nav button {
+  border: 0;
+  background: white;
+  padding: 15px 5px;
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: .5px;
+  border-bottom: 3px solid transparent;
+}
+
+.nav button.active {
+  border-bottom-color: var(--black);
+}
+
+.screen {
+  display: none;
+  padding: 18px;
+}
+
+.screen.active {
+  display: block;
+}
+
+.card {
+  border: 1px solid var(--border);
+  border-radius: 18px;
+  padding: 17px;
+  margin-bottom: 15px;
+  background: white;
+}
+
+.section-label {
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: .8px;
+  color: var(--gray);
+  text-transform: uppercase;
+  margin-bottom: 7px;
+}
+
+h1,h2,h3,p {
+  margin-top: 0;
+}
+
+h2 {
+  font-size: 22px;
+  margin-bottom: 5px;
+}
+
+.subtle {
+  color: var(--gray);
+  font-size: 13px;
+}
+
+.timer {
+  font-size: 35px;
+  font-weight: 800;
+  letter-spacing: 1px;
+  margin: 5px 0 14px;
+}
+
+.button-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.btn {
+  border: 0;
+  border-radius: 11px;
+  padding: 11px 14px;
+  font-weight: 750;
+  background: var(--black);
+  color: white;
+}
+
+.btn.secondary {
+  background: #ececec;
+  color: var(--black);
+}
+
+.btn.outline {
+  background: white;
+  color: var(--black);
+  border: 1px solid var(--border);
+}
+
+.btn.danger {
+  background: #fff0ef;
+  color: var(--red);
+}
+
+.btn.small {
+  padding: 8px 10px;
+  font-size: 12px;
+}
+
+.day-tabs {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 6px;
+  margin-bottom: 15px;
+}
+
+.day-tabs button {
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 10px 3px;
+  background: white;
+  font-weight: 800;
+}
+
+.day-tabs button.active {
+  background: var(--black);
+  color: white;
+}
+
+.progress-bar {
+  width: 100%;
+  height: 7px;
+  border-radius: 10px;
+  background: #ededed;
+  overflow: hidden;
+  margin: 12px 0;
+}
+
+.progress-fill {
+  height: 100%;
+  background: var(--black);
+  transition: width .2s;
+}
+
+.exercise-title {
+  font-size: 25px;
+  font-weight: 850;
+  line-height: 1.1;
+  margin-bottom: 5px;
+}
+
+.exercise-meta {
+  color: var(--gray);
+  font-size: 13px;
+  margin-bottom: 14px;
+}
+
+.last-time {
+  background: var(--light);
+  border-radius: 12px;
+  padding: 12px;
+  margin-bottom: 14px;
+  font-size: 13px;
+}
+
+.last-time strong {
+  display: block;
+  font-size: 11px;
+  letter-spacing: .6px;
+  margin-bottom: 5px;
+}
+
+.set-row {
+  display: grid;
+  grid-template-columns: 38px 1fr 1fr 48px;
+  gap: 7px;
+  align-items: end;
+  margin-bottom: 10px;
+}
+
+.set-number {
+  height: 43px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 800;
+}
+
+.field label {
+  display: block;
+  font-size: 10px;
+  color: var(--gray);
+  margin: 0 0 4px 2px;
+  font-weight: 700;
+}
+
+.field input,
+.field select,
+.form-field input,
+.form-field select {
+  width: 100%;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 11px 10px;
+  background: white;
+  min-height: 43px;
+}
+
+.check-btn {
+  width: 43px;
+  height: 43px;
+  border-radius: 11px;
+  border: 1px solid var(--border);
+  background: white;
+  font-size: 18px;
+}
+
+.check-btn.done {
+  background: var(--black);
+  color: white;
+}
+
+.exercise-nav {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 9px;
+  margin-top: 15px;
+}
+
+.form-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+
+.form-field {
+  margin-bottom: 11px;
+}
+
+.form-field label {
+  display: block;
+  font-size: 11px;
+  font-weight: 750;
+  margin: 0 0 5px 2px;
+  color: #555;
+}
+
+.full {
+  grid-column: 1 / -1;
+}
+
+.exercise-list {
+  margin-top: 15px;
+}
+
+.exercise-item {
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 13px;
+  margin-bottom: 9px;
+}
+
+.exercise-item-top {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+  align-items: flex-start;
+}
+
+.exercise-item-name {
+  font-weight: 800;
+  margin-bottom: 4px;
+}
+
+.tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+  margin-top: 7px;
+}
+
+.tag {
+  background: var(--light);
+  border-radius: 20px;
+  padding: 5px 8px;
+  font-size: 10px;
+  color: #555;
+}
+
+.editor-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 10px;
+}
+
+.library-results {
+  max-height: 420px;
+  overflow-y: auto;
+  margin-top: 10px;
+  border-top: 1px solid var(--border);
+  padding-top: 10px;
+}
+
+.library-row {
+  padding: 11px 3px;
+  border-bottom: 1px solid #eee;
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+  align-items: center;
+}
+
+.library-name {
+  font-weight: 750;
+  font-size: 14px;
+}
+
+.library-meta {
+  font-size: 11px;
+  color: var(--gray);
+  margin-top: 3px;
+}
+
+.summary-box {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 7px;
+  margin-top: 10px;
+}
+
+.summary-pill {
+  padding: 7px 9px;
+  background: var(--light);
+  border-radius: 20px;
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.history-item {
+  border-bottom: 1px solid var(--border);
+  padding: 13px 0;
+}
+
+.history-item:last-child {
+  border-bottom: 0;
+}
+
+.history-title {
+  font-weight: 800;
+}
+
+.history-meta {
+  color: var(--gray);
+  font-size: 12px;
+  margin-top: 3px;
+}
+
+.empty {
+  text-align: center;
+  padding: 30px 10px;
+  color: var(--gray);
+}
+
+.modal {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,.5);
+  z-index: 100;
+  padding: 20px;
+  overflow-y: auto;
+}
+
+.modal.open {
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+}
+
+.modal-box {
+  width: 100%;
+  max-width: 600px;
+  background: white;
+  border-radius: 18px;
+  padding: 18px;
+  margin: 30px 0;
+}
+
+.modal-header {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+  align-items: center;
+  margin-bottom: 15px;
+}
+
+.modal-header h3 {
+  margin: 0;
+}
+
+.close-btn {
+  border: 0;
+  background: #eee;
+  border-radius: 50%;
+  width: 38px;
+  height: 38px;
+  font-size: 20px;
+}
+
+.notice {
+  padding: 10px 12px;
+  border-radius: 10px;
+  background: #eef6ee;
+  color: var(--green);
+  font-size: 12px;
+  font-weight: 700;
+  margin-bottom: 12px;
+  display: none;
+}
+
+@media(max-width: 430px) {
+  .screen {
+    padding: 14px;
+  }
+
+  .form-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .set-row {
+    grid-template-columns: 32px 1fr 1fr 44px;
+  }
+
+  .exercise-title {
+    font-size: 22px;
+  }
+}
+</style>
+</head>
+
+<body>
+
+<div class="app">
+
+  <header class="header">
+    <div class="header-top">
+      <div>
+        <div class="logo">WORK OUT</div>
+        <div class="version">V2 · CUSTOM TRAINING</div>
+      </div>
+      <div id="headerDayCount">0/5</div>
+    </div>
+
+    <div class="week-progress" id="weeklyText">
+      0 of 5 training days complete
+    </div>
+  </header>
+
+  <nav class="nav">
+    <button class="active" data-screen="workout">WORKOUT</button>
+    <button data-screen="program">PROGRAM</button>
+    <button data-screen="history">HISTORY</button>
+  </nav>
+
+  <!-- WORKOUT -->
+  <section id="workoutScreen" class="screen active">
+
+    <div class="card">
+      <div class="section-label">Workout Timer</div>
+      <div class="timer" id="timerDisplay">00:00:00</div>
+
+      <div class="button-row">
+        <button class="btn" id="timerStart">Start</button>
+        <button class="btn secondary" id="timerPause">Pause</button>
+        <button class="btn outline" id="timerReset">Reset</button>
+      </div>
+    </div>
+
+    <div class="day-tabs" id="workoutDayTabs"></div>
+
+    <div class="card">
+      <div class="section-label" id="workoutDayLabel"></div>
+      <h2 id="workoutDayName"></h2>
+      <div class="subtle" id="workoutFocus"></div>
+
+      <div class="progress-bar">
+        <div class="progress-fill" id="exerciseProgress"></div>
+      </div>
+
+      <div class="subtle" id="exerciseCounter"></div>
+    </div>
+
+    <div class="card" id="exerciseCard">
+      <div class="exercise-title" id="exerciseName"></div>
+      <div class="exercise-meta" id="exerciseMeta"></div>
+
+      <div class="last-time" id="lastTime"></div>
+
+      <div id="setsContainer"></div>
+
+      <div class="button-row" style="margin-top:12px">
+        <button class="btn outline small" id="swapTodayBtn">↔ Swap Today</button>
+      </div>
+
+      <div class="exercise-nav">
+        <button class="btn secondary" id="previousExercise">← Previous</button>
+        <button class="btn" id="nextExercise">Next →</button>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="button-row">
+        <button class="btn" id="finishWorkoutBtn">Finish Workout</button>
+        <button class="btn danger" id="clearCurrentBtn">Clear Today's Entries</button>
+      </div>
+    </div>
+
+  </section>
+
+  <!-- PROGRAM -->
+  <section id="programScreen" class="screen">
+
+    <div class="card">
+      <div class="section-label">Program Builder</div>
+      <h2>Build Your Training Week</h2>
+      <p class="subtle">
+        Add, remove, reorder, or customize anything you want.
+      </p>
+
+      <div class="form-field">
+        <label>Day</label>
+        <select id="programDaySelect"></select>
+      </div>
+
+      <div class="form-grid">
+        <div class="form-field">
+          <label>Day Name</label>
+          <input id="dayNameInput">
+        </div>
+
+        <div class="form-field">
+          <label>Focus</label>
+          <input id="dayFocusInput">
+        </div>
+      </div>
+
+      <button class="btn" id="saveDayInfo">Save Day Details</button>
+
+      <div class="summary-box" id="muscleSummary"></div>
+    </div>
+
+    <div class="card">
+      <div class="section-label">Exercises</div>
+      <div id="programExerciseList" class="exercise-list"></div>
+
+      <div class="button-row">
+        <button class="btn" id="openLibraryBtn">+ Add Exercise</button>
+        <button class="btn outline" id="createCustomBtn">+ Custom Exercise</button>
+        <button class="btn danger" id="resetDayBtn">Reset Day</button>
+      </div>
+    </div>
+
+  </section>
+
+  <!-- HISTORY -->
+  <section id="historyScreen" class="screen">
+
+    <div class="card">
+      <div class="section-label">Training History</div>
+      <h2>Your Workouts</h2>
+      <p class="subtle">
+        Completed sessions and previous performance live here.
+      </p>
+    </div>
+
+    <div class="card">
+      <div id="historyList"></div>
+    </div>
+
+  </section>
+
+</div>
+
+<!-- EXERCISE LIBRARY MODAL -->
+<div class="modal" id="libraryModal">
+  <div class="modal-box">
+
+    <div class="modal-header">
+      <h3 id="libraryTitle">Exercise Library</h3>
+      <button class="close-btn" data-close="libraryModal">×</button>
+    </div>
+
+    <div class="form-grid">
+
+      <div class="form-field">
+        <label>Muscle Group</label>
+        <select id="muscleFilter"></select>
+      </div>
+
+      <div class="form-field">
+        <label>Equipment</label>
+        <select id="equipmentFilter"></select>
+      </div>
+
+      <div class="form-field">
+        <label>Training Style</label>
+        <select id="styleFilter"></select>
+      </div>
+
+      <div class="form-field">
+        <label>Movement</label>
+        <select id="movementFilter"></select>
+      </div>
+
+      <div class="form-field full">
+        <label>Search</label>
+        <input id="librarySearch" placeholder="Search exercises...">
+      </div>
+
+    </div>
+
+    <div id="libraryResults" class="library-results"></div>
+
+  </div>
+</div>
+
+<!-- EDIT EXERCISE MODAL -->
+<div class="modal" id="editModal">
+  <div class="modal-box">
+
+    <div class="modal-header">
+      <h3 id="editModalTitle">Edit Exercise</h3>
+      <button class="close-btn" data-close="editModal">×</button>
+    </div>
+
+    <div class="notice" id="editNotice"></div>
+
+    <div class="form-field">
+      <label>Exercise Name</label>
+      <input id="editExerciseName">
+    </div>
+
+    <div class="form-grid">
+
+      <div class="form-field">
+        <label>Muscle Group</label>
+        <select id="editMuscle"></select>
+      </div>
+
+      <div class="form-field">
+        <label>Equipment</label>
+        <select id="editEquipment"></select>
+      </div>
+
+      <div class="form-field">
+        <label>Sets</label>
+        <select id="editSets"></select>
+      </div>
+
+      <div class="form-field">
+        <label>Rep Range</label>
+        <select id="editReps">
+          <option>5-8</option>
+          <option>6-10</option>
+          <option>8-10</option>
+          <option>8-12</option>
+          <option>10-12</option>
+          <option>10-15</option>
+          <option>12-15</option>
+          <option>12-20</option>
+          <option>15-20</option>
+          <option>20+</option>
+          <option value="custom">Custom...</option>
+        </select>
+      </div>
+
+      <div class="form-field full" id="customRepWrap" style="display:none">
+        <label>Custom Rep Range</label>
+        <input id="customRepInput" placeholder="Example: 8-15">
+      </div>
+
+    </div>
+
+    <div class="button-row">
+      <button class="btn" id="saveExerciseBtn">Save Exercise</button>
+      <button class="btn secondary" data-close="editModal">Cancel</button>
+    </div>
+
+  </div>
+</div>
+
+<script>
+
+/* =========================================================
+   EXERCISE LIBRARY
+========================================================= */
+
+const LIBRARY = [
+
+["Incline Dumbbell Press","Chest","Dumbbell","Hypertrophy","Compound"],
+["Flat Dumbbell Press","Chest","Dumbbell","Hypertrophy","Compound"],
+["Decline Dumbbell Press","Chest","Dumbbell","Hypertrophy","Compound"],
+["Dumbbell Floor Press","Chest","Dumbbell","Strength","Compound"],
+["Dumbbell Squeeze Press","Chest","Dumbbell","Hypertrophy","Compound"],
+["Machine Chest Press","Chest","Machine","Hypertrophy","Compound"],
+["Incline Machine Press","Chest","Machine","Hypertrophy","Compound"],
+["Smith Machine Bench Press","Chest","Smith Machine","Strength","Compound"],
+["Smith Machine Incline Press","Chest","Smith Machine","Hypertrophy","Compound"],
+["Cable Chest Fly","Chest","Cable","Accessory","Isolation"],
+["Low-to-High Cable Fly","Chest","Cable","Accessory","Isolation"],
+["High-to-Low Cable Fly","Chest","Cable","Accessory","Isolation"],
+["Push-Up","Chest","Bodyweight","Endurance","Compound"],
+["Incline Push-Up","Chest","Bodyweight","Endurance","Compound"],
+
+["Lat Pulldown","Back","Cable","Hypertrophy","Compound"],
+["Wide-Grip Lat Pulldown","Back","Cable","Hypertrophy","Compound"],
+["Close-Grip Lat Pulldown","Back","Cable","Hypertrophy","Compound"],
+["Single-Arm Lat Pulldown","Back","Cable","Hypertrophy","Unilateral"],
+["Straight-Arm Pulldown","Back","Cable","Accessory","Isolation"],
+["Seated Cable Row","Back","Cable","Hypertrophy","Compound"],
+["Single-Arm Cable Row","Back","Cable","Hypertrophy","Unilateral"],
+["Chest-Supported Dumbbell Row","Back","Dumbbell","Hypertrophy","Compound"],
+["Chest-Supported Machine Row","Back","Machine","Hypertrophy","Compound"],
+["High Row Machine","Back","Machine","Hypertrophy","Compound"],
+["Low Row Machine","Back","Machine","Hypertrophy","Compound"],
+["One-Arm Dumbbell Row","Back","Dumbbell","Hypertrophy","Unilateral"],
+["Bent-Over Dumbbell Row","Back","Dumbbell","Strength","Compound"],
+["Assisted Pull-Up","Back","Machine","Strength","Compound"],
+
+["Seated Dumbbell Shoulder Press","Shoulders","Dumbbell","Hypertrophy","Compound"],
+["Machine Shoulder Press","Shoulders","Machine","Hypertrophy","Compound"],
+["Arnold Press","Shoulders","Dumbbell","Hypertrophy","Compound"],
+["Dumbbell Lateral Raise","Shoulders","Dumbbell","Accessory","Isolation"],
+["Cable Lateral Raise","Shoulders","Cable","Accessory","Isolation"],
+["Single-Arm Cable Lateral Raise","Shoulders","Cable","Accessory","Unilateral"],
+["Machine Lateral Raise","Shoulders","Machine","Accessory","Isolation"],
+["Reverse Fly Machine","Shoulders","Machine","Accessory","Isolation"],
+["Dumbbell Reverse Fly","Shoulders","Dumbbell","Accessory","Isolation"],
+["Cable Reverse Fly","Shoulders","Cable","Accessory","Isolation"],
+["Face Pull","Shoulders","Cable","Accessory","Isolation"],
+["Front Raise","Shoulders","Dumbbell","Accessory","Isolation"],
+
+["Dumbbell Curl","Biceps","Dumbbell","Hypertrophy","Isolation"],
+["Hammer Curl","Biceps","Dumbbell","Hypertrophy","Isolation"],
+["Incline Dumbbell Curl","Biceps","Dumbbell","Hypertrophy","Isolation"],
+["Incline Hammer Curl","Biceps","Dumbbell","Hypertrophy","Isolation"],
+["Cable Curl","Biceps","Cable","Accessory","Isolation"],
+["Bayesian Cable Curl","Biceps","Cable","Accessory","Unilateral"],
+["Preacher Curl","Biceps","Machine","Hypertrophy","Isolation"],
+["Machine Bicep Curl","Biceps","Machine","Accessory","Isolation"],
+["Cross-Body Hammer Curl","Biceps","Dumbbell","Accessory","Unilateral"],
+
+["Rope Tricep Pushdown","Triceps","Cable","Hypertrophy","Isolation"],
+["Straight-Bar Tricep Pushdown","Triceps","Cable","Hypertrophy","Isolation"],
+["Single-Arm Cable Pushdown","Triceps","Cable","Accessory","Unilateral"],
+["Overhead Rope Extension","Triceps","Cable","Hypertrophy","Isolation"],
+["Single-Arm Overhead Extension","Triceps","Cable","Accessory","Unilateral"],
+["Dumbbell Overhead Extension","Triceps","Dumbbell","Hypertrophy","Isolation"],
+["Assisted Dip","Triceps","Machine","Strength","Compound"],
+["Bench Dip","Triceps","Bodyweight","Endurance","Compound"],
+["Close-Grip Dumbbell Press","Triceps","Dumbbell","Strength","Compound"],
+
+["Hack Squat","Quads","Machine","Strength","Compound"],
+["Leg Press","Quads","Machine","Hypertrophy","Compound"],
+["Narrow-Stance Leg Press","Quads","Machine","Hypertrophy","Compound"],
+["Leg Extension","Quads","Machine","Accessory","Isolation"],
+["Goblet Squat","Quads","Dumbbell","Hypertrophy","Compound"],
+["Smith Machine Squat","Quads","Smith Machine","Strength","Compound"],
+["Heel-Elevated Goblet Squat","Quads","Dumbbell","Hypertrophy","Compound"],
+["Reverse Lunge","Quads","Dumbbell","Hypertrophy","Unilateral"],
+["Walking Lunge","Quads","Dumbbell","Hypertrophy","Unilateral"],
+["Step-Up","Quads","Dumbbell","Hypertrophy","Unilateral"],
+["Bulgarian Split Squat","Quads","Dumbbell","Hypertrophy","Unilateral"],
+
+["Romanian Deadlift","Hamstrings","Dumbbell","Strength","Compound"],
+["Smith Machine Romanian Deadlift","Hamstrings","Smith Machine","Strength","Compound"],
+["Seated Leg Curl","Hamstrings","Machine","Hypertrophy","Isolation"],
+["Lying Leg Curl","Hamstrings","Machine","Hypertrophy","Isolation"],
+["Single-Leg Curl","Hamstrings","Machine","Accessory","Unilateral"],
+["Cable Pull-Through","Hamstrings","Cable","Hypertrophy","Compound"],
+["Dumbbell Good Morning","Hamstrings","Dumbbell","Accessory","Compound"],
+["Stability Ball Hamstring Curl","Hamstrings","Bodyweight","Accessory","Isolation"],
+
+["Hip Thrust","Glutes","Machine","Strength","Compound"],
+["Smith Machine Hip Thrust","Glutes","Smith Machine","Strength","Compound"],
+["Dumbbell Hip Thrust","Glutes","Dumbbell","Hypertrophy","Compound"],
+["Glute Bridge","Glutes","Bodyweight","Accessory","Compound"],
+["Single-Leg Glute Bridge","Glutes","Bodyweight","Accessory","Unilateral"],
+["Cable Glute Kickback","Glutes","Cable","Accessory","Unilateral"],
+["Hip Abduction Machine","Glutes","Machine","Accessory","Isolation"],
+["Cable Hip Abduction","Glutes","Cable","Accessory","Unilateral"],
+["Glute-Biased Back Extension","Glutes","Machine","Hypertrophy","Compound"],
+["Frog Pump","Glutes","Bodyweight","Accessory","Isolation"],
+["Sumo Goblet Squat","Glutes","Dumbbell","Hypertrophy","Compound"],
+["Glute-Biased Bulgarian Split Squat","Glutes","Dumbbell","Hypertrophy","Unilateral"],
+
+["Standing Calf Raise","Calves","Machine","Hypertrophy","Isolation"],
+["Seated Calf Raise","Calves","Machine","Hypertrophy","Isolation"],
+["Leg Press Calf Raise","Calves","Machine","Accessory","Isolation"],
+["Single-Leg Calf Raise","Calves","Bodyweight","Accessory","Unilateral"],
+
+["Pallof Press","Core","Cable","Stability","Anti-Rotation"],
+["Dead Bug","Core","Bodyweight","Stability","Anti-Extension"],
+["Bird Dog","Core","Bodyweight","Stability","Anti-Rotation"],
+["Heel Slide","Core","Bodyweight","Stability","Anti-Extension"],
+["Bear Plank Hold","Core","Bodyweight","Stability","Anti-Extension"],
+["Standing Cable March","Core","Cable","Stability","Anti-Rotation"],
+["Suitcase Hold","Core","Dumbbell","Stability","Anti-Lateral Flexion"],
+["Cable Chop","Core","Cable","Stability","Rotation"],
+
+["Dumbbell Squat to Press","Full Body","Dumbbell","Conditioning","Compound"],
+["Dumbbell Romanian Deadlift to Row","Full Body","Dumbbell","Conditioning","Compound"],
+["Reverse Lunge to Press","Full Body","Dumbbell","Conditioning","Compound"],
+["Step-Up to Knee Drive","Full Body","Dumbbell","Conditioning","Unilateral"],
+["Cable Squat to Row","Full Body","Cable","Conditioning","Compound"]
+
+].map((x,i)=>({
+  id:"lib-"+i,
+  name:x[0],
+  muscle:x[1],
+  equipment:x[2],
+  style:x[3],
+  movement:x[4]
+}));
+
+
+/* =========================================================
+   ORIGINAL PROGRAM
+========================================================= */
+
+function ex(name, muscle, equipment, sets=3, reps="10-15"){
+  return {
+    id: crypto.randomUUID ? crypto.randomUUID() : Date.now()+"-"+Math.random(),
+    name,
+    muscle,
+    equipment,
+    sets,
+    reps
+  };
+}
+
+const ORIGINAL_PROGRAM = [
+{
+  name:"Chest + Triceps",
+  focus:"Push Strength",
+  exercises:[
+    ex("Incline Dumbbell Press","Chest","Dumbbell",3,"8-12"),
+    ex("Machine Chest Press","Chest","Machine",3,"10-12"),
+    ex("Cable Chest Fly","Chest","Cable",3,"10-15"),
+    ex("Rope Tricep Pushdown","Triceps","Cable",3,"10-15"),
+    ex("Overhead Rope Extension","Triceps","Cable",3,"10-15"),
+    ex("Low-to-High Cable Fly","Chest","Cable",3,"10-15"),
+    ex("Single-Arm Cable Pushdown","Triceps","Cable",3,"10-15"),
+    ex("Assisted Dip","Triceps","Machine",3,"8-12")
+  ]
+},
+{
+  name:"Back + Biceps",
+  focus:"Pull Strength",
+  exercises:[
+    ex("Lat Pulldown","Back","Cable",3,"8-12"),
+    ex("Seated Cable Row","Back","Cable",3,"10-12"),
+    ex("High Row Machine","Back","Machine",3,"10-12"),
+    ex("Incline Hammer Curl","Biceps","Dumbbell",3,"10-12"),
+    ex("Cable Curl","Biceps","Cable",3,"10-15"),
+    ex("Straight-Arm Pulldown","Back","Cable",3,"10-15"),
+    ex("Single-Arm Lat Pulldown","Back","Cable",3,"10-12"),
+    ex("Bayesian Cable Curl","Biceps","Cable",3,"10-15")
+  ]
+},
+{
+  name:"Legs",
+  focus:"Quads + Hamstrings + Glutes",
+  exercises:[
+    ex("Hack Squat","Quads","Machine",3,"8-12"),
+    ex("Leg Press","Quads","Machine",3,"10-12"),
+    ex("Romanian Deadlift","Hamstrings","Dumbbell",3,"8-12"),
+    ex("Leg Extension","Quads","Machine",3,"10-15"),
+    ex("Seated Leg Curl","Hamstrings","Machine",3,"10-15"),
+    ex("Hip Abduction Machine","Glutes","Machine",3,"12-15"),
+    ex("Reverse Lunge","Quads","Dumbbell",3,"8-12"),
+    ex("Cable Pull-Through","Hamstrings","Cable",3,"10-15")
+  ]
+},
+{
+  name:"Shoulders + Core",
+  focus:"Delts + Trunk Stability",
+  exercises:[
+    ex("Seated Dumbbell Shoulder Press","Shoulders","Dumbbell",3,"8-12"),
+    ex("Dumbbell Lateral Raise","Shoulders","Dumbbell",3,"12-15"),
+    ex("Reverse Fly Machine","Shoulders","Machine",3,"12-15"),
+    ex("Pallof Press","Core","Cable",3,"10-12"),
+    ex("Dead Bug","Core","Bodyweight",3,"8-10"),
+    ex("Single-Arm Cable Lateral Raise","Shoulders","Cable",3,"10-15"),
+    ex("Face Pull","Shoulders","Cable",3,"12-15"),
+    ex("Bird Dog","Core","Bodyweight",3,"8-10")
+  ]
+},
+{
+  name:"Glutes + Full Body",
+  focus:"Glute Emphasis + Upper-Body Finish",
+  exercises:[
+    ex("Hip Thrust","Glutes","Machine",3,"8-12"),
+    ex("Bulgarian Split Squat","Quads","Dumbbell",3,"8-12"),
+    ex("Cable Glute Kickback","Glutes","Cable",3,"12-15"),
+    ex("Single-Arm Cable Row","Back","Cable",3,"10-12"),
+    ex("Flat Dumbbell Press","Chest","Dumbbell",3,"10-12"),
+    ex("Face Pull","Shoulders","Cable",3,"12-15"),
+    ex("Step-Up","Quads","Dumbbell",3,"10-12"),
+    ex("Goblet Squat","Quads","Dumbbell",3,"10-15")
+  ]
+}
+];
+
+
+/* =========================================================
+   STATE
+========================================================= */
+
+const clone = obj => JSON.parse(JSON.stringify(obj));
+
+let program =
+  JSON.parse(localStorage.getItem("workoutV2_program")) ||
+  clone(ORIGINAL_PROGRAM);
+
+let history =
+  JSON.parse(localStorage.getItem("workoutV2_history")) || [];
+
+let currentLog =
+  JSON.parse(localStorage.getItem("workoutV2_current")) || {};
+
+let completedDays =
+  JSON.parse(localStorage.getItem("workoutV2_completedDays")) || [];
+
+let temporarySwaps =
+  JSON.parse(localStorage.getItem("workoutV2_swaps")) || {};
+
+let currentDay = 0;
+let currentExercise = 0;
+let programDay = 0;
+
+let editorMode = null;
+let editingIndex = null;
+let swapTarget = null;
+
+
+/* =========================================================
+   SAVE
+========================================================= */
+
+function saveAll(){
+  localStorage.setItem("workoutV2_program",JSON.stringify(program));
+  localStorage.setItem("workoutV2_history",JSON.stringify(history));
+  localStorage.setItem("workoutV2_current",JSON.stringify(currentLog));
+  localStorage.setItem("workoutV2_completedDays",JSON.stringify(completedDays));
+  localStorage.setItem("workoutV2_swaps",JSON.stringify(temporarySwaps));
+}
+
+
+/* =========================================================
+   NAVIGATION
+========================================================= */
+
+document.querySelectorAll(".nav button").forEach(btn=>{
+  btn.addEventListener("click",()=>{
+    document.querySelectorAll(".nav button").forEach(x=>x.classList.remove("active"));
+    btn.classList.add("active");
+
+    document.querySelectorAll(".screen").forEach(x=>x.classList.remove("active"));
+    document.getElementById(btn.dataset.screen+"Screen").classList.add("active");
+
+    if(btn.dataset.screen==="program") renderProgram();
+    if(btn.dataset.screen==="history") renderHistory();
+  });
+});
+
+
+/* =========================================================
+   TIMER
+========================================================= */
+
+let timerSeconds = 0;
+let timerInterval = null;
+
+function formatTimer(s){
+  const h=Math.floor(s/3600);
+  const m=Math.floor((s%3600)/60);
+  const sec=s%60;
+
+  return [h,m,sec]
+    .map(x=>String(x).padStart(2,"0"))
+    .join(":");
+}
+
+function paintTimer(){
+  document.getElementById("timerDisplay").textContent=formatTimer(timerSeconds);
+}
+
+document.getElementById("timerStart").onclick=()=>{
+  if(timerInterval) return;
+
+  timerInterval=setInterval(()=>{
+    timerSeconds++;
+    paintTimer();
+  },1000);
+};
+
+document.getElementById("timerPause").onclick=()=>{
+  clearInterval(timerInterval);
+  timerInterval=null;
+};
+
+document.getElementById("timerReset").onclick=()=>{
+  clearInterval(timerInterval);
+  timerInterval=null;
+  timerSeconds=0;
+  paintTimer();
+};
+
+
+/* =========================================================
+   WORKOUT HELPERS
+========================================================= */
+
+function dayKey(day){
+  return "day-"+day;
+}
+
+function exerciseFor(day,index){
+
+  const swap =
+    temporarySwaps[dayKey(day)] &&
+    temporarySwaps[dayKey(day)][index];
+
+  return swap || program[day].exercises[index];
+}
+
+function exerciseLogKey(day,index){
+  return day+"-"+index;
+}
+
+function ensureLog(day,index,sets){
+
+  const key=exerciseLogKey(day,index);
+
+  if(!currentLog[key]){
+    currentLog[key]={
+      sets:Array.from({length:sets},()=>({
+        weight:"",
+        reps:"",
+        done:false
+      }))
+    };
+  }
+
+  while(currentLog[key].sets.length<sets){
+    currentLog[key].sets.push({
+      weight:"",
+      reps:"",
+      done:false
+    });
+  }
+
+  return currentLog[key];
+}
+
+
+/* =========================================================
+   WORKOUT RENDER
+========================================================= */
+
+function renderWorkout(){
+
+  if(currentExercise>=program[currentDay].exercises.length){
+    currentExercise=Math.max(0,program[currentDay].exercises.length-1);
+  }
+
+  renderWorkoutDays();
+  updateWeekly();
+
+  const day=program[currentDay];
+
+  document.getElementById("workoutDayLabel").textContent="DAY "+(currentDay+1);
+  document.getElementById("workoutDayName").textContent=day.name;
+  document.getElementById("workoutFocus").textContent=day.focus;
+
+  if(!day.exercises.length){
+
+    document.getElementById("exerciseName").textContent="No exercises yet";
+    document.getElementById("exerciseMeta").textContent="Add exercises from the Program tab.";
+    document.getElementById("setsContainer").innerHTML="";
+    document.getElementById("lastTime").innerHTML="";
+    document.getElementById("exerciseCounter").textContent="0 exercises";
+    document.getElementById("exerciseProgress").style.width="0%";
+    return;
+  }
+
+  const exercise=exerciseFor(currentDay,currentExercise);
+
+  document.getElementById("exerciseName").textContent=exercise.name;
+
+  document.getElementById("exerciseMeta").textContent=
+    exercise.sets+" sets · "+exercise.reps+" reps · "+
+    exercise.muscle+" · "+exercise.equipment;
+
+  document.getElementById("exerciseCounter").textContent=
+    "Exercise "+(currentExercise+1)+" of "+day.exercises.length;
+
+  document.getElementById("exerciseProgress").style.width=
+    (((currentExercise+1)/day.exercises.length)*100)+"%";
+
+  renderLastTime(exercise);
+  renderSets(exercise);
+}
+
+function renderWorkoutDays(){
+
+  const wrap=document.getElementById("workoutDayTabs");
+  wrap.innerHTML="";
+
+  program.forEach((day,i)=>{
+
+    const b=document.createElement("button");
+    b.textContent="D"+(i+1);
+
+    if(i===currentDay) b.classList.add("active");
+
+    b.onclick=()=>{
+      currentDay=i;
+      currentExercise=0;
+      renderWorkout();
+    };
+
+    wrap.appendChild(b);
+  });
+}
+
+function renderSets(exercise){
+
+  const log=ensureLog(currentDay,currentExercise,exercise.sets);
+  const container=document.getElementById("setsContainer");
+
+  container.innerHTML="";
+
+  log.sets.slice(0,exercise.sets).forEach((set,i)=>{
+
+    const row=document.createElement("div");
+    row.className="set-row";
+
+    row.innerHTML=`
+      <div class="set-number">${i+1}</div>
+
+      <div class="field">
+        <label>WEIGHT</label>
+        <input inputmode="decimal" value="${set.weight}">
+      </div>
+
+      <div class="field">
+        <label>REPS</label>
+        <input inputmode="numeric" value="${set.reps}">
+      </div>
+
+      <button class="check-btn ${set.done?"done":""}">
+        ${set.done?"✓":"○"}
+      </button>
+    `;
+
+    const inputs=row.querySelectorAll("input");
+    const check=row.querySelector(".check-btn");
+
+    inputs[0].oninput=e=>{
+      set.weight=e.target.value;
+      saveAll();
+    };
+
+    inputs[1].oninput=e=>{
+      set.reps=e.target.value;
+      saveAll();
+    };
+
+    check.onclick=()=>{
+      set.done=!set.done;
+      saveAll();
+      renderWorkout();
+    };
+
+    container.appendChild(row);
+  });
+
+  saveAll();
+}
+
+
+/* =========================================================
+   LAST TIME
+========================================================= */
+
+function renderLastTime(exercise){
+
+  const box=document.getElementById("lastTime");
+
+  let previous=null;
+
+  for(let i=history.length-1;i>=0;i--){
+
+    const match=history[i].exercises.find(x=>x.name===exercise.name);
+
+    if(match){
+      previous=match;
+      break;
+    }
+  }
+
+  if(!previous){
+    box.innerHTML="<strong>LAST TIME</strong>No previous workout logged yet.";
+    return;
+  }
+
+  const lines=previous.sets
+    .filter(x=>x.weight || x.reps)
+    .map((x,i)=>
+      `Set ${i+1}: ${x.weight || "—"} lb × ${x.reps || "—"}`
+    );
+
+  box.innerHTML=
+    "<strong>LAST TIME</strong>"+
+    (lines.length ? lines.join("<br>") : "No set data recorded.");
+}
+
+
+/* =========================================================
+   WORKOUT CONTROLS
+========================================================= */
+
+document.getElementById("previousExercise").onclick=()=>{
+
+  if(currentExercise>0){
+    currentExercise--;
+    renderWorkout();
+  }
+};
+
+document.getElementById("nextExercise").onclick=()=>{
+
+  if(currentExercise<program[currentDay].exercises.length-1){
+    currentExercise++;
+    renderWorkout();
+  }
+};
+
+
+/* =========================================================
+   FINISH WORKOUT
+========================================================= */
+
+document.getElementById("finishWorkoutBtn").onclick=()=>{
+
+  const day=program[currentDay];
+
+  if(!day.exercises.length) return;
+
+  const record={
+    id:Date.now(),
+    date:new Date().toISOString(),
+    day:currentDay,
+    dayName:day.name,
+    duration:timerSeconds,
+    exercises:[]
+  };
+
+  day.exercises.forEach((baseExercise,index)=>{
+
+    const exercise=exerciseFor(currentDay,index);
+    const log=ensureLog(currentDay,index,exercise.sets);
+
+    record.exercises.push({
+      name:exercise.name,
+      muscle:exercise.muscle,
+      equipment:exercise.equipment,
+      sets:clone(log.sets.slice(0,exercise.sets))
+    });
+  });
+
+  history.push(record);
+
+  if(!completedDays.includes(currentDay)){
+    completedDays.push(currentDay);
+  }
+
+  Object.keys(currentLog)
+    .filter(k=>k.startsWith(currentDay+"-"))
+    .forEach(k=>delete currentLog[k]);
+
+  delete temporarySwaps[dayKey(currentDay)];
+
+  clearInterval(timerInterval);
+  timerInterval=null;
+  timerSeconds=0;
+  paintTimer();
+
+  saveAll();
+  updateWeekly();
+  renderWorkout();
+
+  alert("Workout saved! 💪");
+};
+
+
+document.getElementById("clearCurrentBtn").onclick=()=>{
+
+  if(!confirm("Clear the weights, reps, and checkmarks for this day?")) return;
+
+  Object.keys(currentLog)
+    .filter(k=>k.startsWith(currentDay+"-"))
+    .forEach(k=>delete currentLog[k]);
+
+  delete temporarySwaps[dayKey(currentDay)];
+
+  saveAll();
+  renderWorkout();
+};
+
+
+/* =========================================================
+   WEEKLY PROGRESS
+========================================================= */
+
+function updateWeekly(){
+
+  const count=completedDays.length;
+
+  document.getElementById("headerDayCount").textContent=count+"/5";
+  document.getElementById("weeklyText").textContent=
+    count+" of 5 training days complete";
+}
+
+
+/* =========================================================
+   PROGRAM BUILDER
+========================================================= */
+
+function renderProgram(){
+
+  const select=document.getElementById("programDaySelect");
+
+  select.innerHTML=program.map((d,i)=>
+    `<option value="${i}" ${i===programDay?"selected":""}>
+      Day ${i+1} · ${d.name}
+    </option>`
+  ).join("");
+
+  const day=program[programDay];
+
+  document.getElementById("dayNameInput").value=day.name;
+  document.getElementById("dayFocusInput").value=day.focus;
+
+  renderProgramExercises();
+  renderMuscleSummary();
+}
+
+document.getElementById("programDaySelect").onchange=e=>{
+  programDay=Number(e.target.value);
+  renderProgram();
+};
+
+document.getElementById("saveDayInfo").onclick=()=>{
+
+  program[programDay].name=
+    document.getElementById("dayNameInput").value.trim() ||
+    "Training Day";
+
+  program[programDay].focus=
+    document.getElementById("dayFocusInput").value.trim();
+
+  saveAll();
+  renderProgram();
+  renderWorkout();
+};
+
+
+function renderProgramExercises(){
+
+  const wrap=document.getElementById("programExerciseList");
+  const exercises=program[programDay].exercises;
+
+  if(!exercises.length){
+    wrap.innerHTML='<div class="empty">No exercises yet. Add one below.</div>';
+    return;
+  }
+
+  wrap.innerHTML="";
+
+  exercises.forEach((exercise,index)=>{
+
+    const item=document.createElement("div");
+    item.className="exercise-item";
+
+    item.innerHTML=`
+      <div class="exercise-item-top">
+        <div>
+          <div class="exercise-item-name">
+            ${index+1}. ${exercise.name}
+          </div>
+
+          <div class="subtle">
+            ${exercise.sets} sets · ${exercise.reps} reps
+          </div>
+
+          <div class="tags">
+            <span class="tag">${exercise.muscle}</span>
+            <span class="tag">${exercise.equipment}</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="editor-actions">
+        <button class="btn outline small edit">Edit</button>
+        <button class="btn outline small up">↑</button>
+        <button class="btn outline small down">↓</button>
+        <button class="btn danger small delete">Delete</button>
+      </div>
+    `;
+
+    item.querySelector(".edit").onclick=()=>openEdit(index);
+
+    item.querySelector(".up").onclick=()=>{
+      if(index===0) return;
+
+      [exercises[index-1],exercises[index]]=
+      [exercises[index],exercises[index-1]];
+
+      saveAll();
+      renderProgram();
+      renderWorkout();
+    };
+
+    item.querySelector(".down").onclick=()=>{
+      if(index===exercises.length-1) return;
+
+      [exercises[index+1],exercises[index]]=
+      [exercises[index],exercises[index+1]];
+
+      saveAll();
+      renderProgram();
+      renderWorkout();
+    };
+
+    item.querySelector(".delete").onclick=()=>{
+
+      if(!confirm("Delete "+exercise.name+" from this day?")) return;
+
+      exercises.splice(index,1);
+
+      saveAll();
+      renderProgram();
+      renderWorkout();
+    };
+
+    wrap.appendChild(item);
+  });
+}
+
+
+/* =========================================================
+   MUSCLE SUMMARY
+========================================================= */
+
+function renderMuscleSummary(){
+
+  const counts={};
+
+  program[programDay].exercises.forEach(x=>{
+    counts[x.muscle]=(counts[x.muscle]||0)+1;
+  });
+
+  const wrap=document.getElementById("muscleSummary");
+
+  wrap.innerHTML=
+    `<span class="summary-pill">
+      ${program[programDay].exercises.length} exercises
+    </span>`+
+    Object.entries(counts)
+      .map(([muscle,count])=>
+        `<span class="summary-pill">${muscle} ${count}</span>`
+      ).join("");
+}
+
+
+/* =========================================================
+   FILTER OPTIONS
+========================================================= */
+
+function unique(field){
+  return [...new Set(LIBRARY.map(x=>x[field]))].sort();
+}
+
+function fillSelect(id,values,allLabel){
+
+  const select=document.getElementById(id);
+
+  select.innerHTML=
+    (allLabel ? `<option value="">${allLabel}</option>` : "")+
+    values.map(x=>`<option>${x}</option>`).join("");
+}
+
+fillSelect("muscleFilter",unique("muscle"),"All Muscles");
+fillSelect("equipmentFilter",unique("equipment"),"All Equipment");
+fillSelect("styleFilter",unique("style"),"All Styles");
+fillSelect("movementFilter",unique("movement"),"All Movements");
+
+fillSelect("editMuscle",unique("muscle"));
+fillSelect("editEquipment",unique("equipment"));
+
+document.getElementById("editSets").innerHTML=
+  [1,2,3,4,5,6].map(x=>`<option>${x}</option>`).join("");
+
+
+/* =========================================================
+   LIBRARY
+========================================================= */
+
+document.getElementById("openLibraryBtn").onclick=()=>{
+  editorMode="add";
+  swapTarget=null;
+  document.getElementById("libraryTitle").textContent="Add Exercise";
+  openModal("libraryModal");
+  renderLibrary();
+};
+
+document.getElementById("swapTodayBtn").onclick=()=>{
+
+  if(!program[currentDay].exercises.length) return;
+
+  editorMode="swap";
+  swapTarget={
+    day:currentDay,
+    index:currentExercise
+  };
+
+  document.getElementById("libraryTitle").textContent="Swap Exercise Today";
+
+  const current=exerciseFor(currentDay,currentExercise);
+  document.getElementById("muscleFilter").value=current.muscle;
+
+  openModal("libraryModal");
+  renderLibrary();
+};
+
+[
+ "muscleFilter",
+ "equipmentFilter",
+ "styleFilter",
+ "movementFilter",
+ "librarySearch"
+].forEach(id=>{
+  document.getElementById(id).addEventListener("input",renderLibrary);
+});
+
+
+function renderLibrary(){
+
+  const muscle=document.getElementById("muscleFilter").value;
+  const equipment=document.getElementById("equipmentFilter").value;
+  const style=document.getElementById("styleFilter").value;
+  const movement=document.getElementById("movementFilter").value;
+  const search=document.getElementById("librarySearch").value.toLowerCase();
+
+  const results=LIBRARY.filter(x=>
+    (!muscle || x.muscle===muscle) &&
+    (!equipment || x.equipment===equipment) &&
+    (!style || x.style===style) &&
+    (!movement || x.movement===movement) &&
+    (!search || x.name.toLowerCase().includes(search))
+  );
+
+  const wrap=document.getElementById("libraryResults");
+
+  if(!results.length){
+    wrap.innerHTML='<div class="empty">No matching exercises.</div>';
+    return;
+  }
+
+  wrap.innerHTML="";
+
+  results.forEach(item=>{
+
+    const row=document.createElement("div");
+    row.className="library-row";
+
+    row.innerHTML=`
+      <div>
+        <div class="library-name">${item.name}</div>
+        <div class="library-meta">
+          ${item.muscle} · ${item.equipment} · ${item.style}
+        </div>
+      </div>
+
+      <button class="btn small">
+        ${editorMode==="swap" ? "Swap" : "Add"}
+      </button>
+    `;
+
+    row.querySelector("button").onclick=()=>selectLibraryExercise(item);
+
+    wrap.appendChild(row);
+  });
+}
+
+
+function selectLibraryExercise(item){
+
+  const newExercise=ex(
+    item.name,
+    item.muscle,
+    item.equipment,
+    3,
+    item.style==="Strength" ? "5-8" :
+    item.style==="Accessory" ? "12-15" :
+    "8-12"
+  );
+
+  if(editorMode==="swap"){
+
+    const key=dayKey(swapTarget.day);
+
+    if(!temporarySwaps[key]){
+      temporarySwaps[key]={};
+    }
+
+    temporarySwaps[key][swapTarget.index]=newExercise;
+
+    saveAll();
+    closeModal("libraryModal");
+    renderWorkout();
+    return;
+  }
+
+  program[programDay].exercises.push(newExercise);
+
+  saveAll();
+  closeModal("libraryModal");
+  renderProgram();
+  renderWorkout();
+}
+
+
+/* =========================================================
+   CUSTOM / EDIT EXERCISE
+========================================================= */
+
+document.getElementById("createCustomBtn").onclick=()=>{
+  editorMode="custom";
+  editingIndex=null;
+
+  document.getElementById("editModalTitle").textContent="Create Custom Exercise";
+  document.getElementById("editExerciseName").value="";
+  document.getElementById("editMuscle").value="Full Body";
+  document.getElementById("editEquipment").value="Dumbbell";
+  document.getElementById("editSets").value="3";
+  document.getElementById("editReps").value="10-15";
+
+  openModal("editModal");
+};
+
+
+function openEdit(index){
+
+  editorMode="edit";
+  editingIndex=index;
+
+  const exercise=program[programDay].exercises[index];
+
+  document.getElementById("editModalTitle").textContent="Edit Exercise";
+  document.getElementById("editExerciseName").value=exercise.name;
+  document.getElementById("editMuscle").value=exercise.muscle;
+  document.getElementById("editEquipment").value=exercise.equipment;
+  document.getElementById("editSets").value=exercise.sets;
+
+  const repSelect=document.getElementById("editReps");
+  const known=[...repSelect.options].map(x=>x.value);
+
+  if(known.includes(exercise.reps)){
+    repSelect.value=exercise.reps;
+    document.getElementById("customRepWrap").style.display="none";
+  }else{
+    repSelect.value="custom";
+    document.getElementById("customRepWrap").style.display="block";
+    document.getElementById("customRepInput").value=exercise.reps;
+  }
+
+  openModal("editModal");
+}
+
+
+document.getElementById("editReps").onchange=e=>{
+
+  document.getElementById("customRepWrap").style.display=
+    e.target.value==="custom" ? "block" : "none";
+};
+
+
+document.getElementById("saveExerciseBtn").onclick=()=>{
+
+  const name=document.getElementById("editExerciseName").value.trim();
+
+  if(!name){
+    alert("Give the exercise a name first.");
+    return;
+  }
+
+  let reps=document.getElementById("editReps").value;
+
+  if(reps==="custom"){
+    reps=document.getElementById("customRepInput").value.trim() || "8-12";
+  }
+
+  const exercise=ex(
+    name,
+    document.getElementById("editMuscle").value,
+    document.getElementById("editEquipment").value,
+    Number(document.getElementById("editSets").value),
+    reps
+  );
+
+  if(editorMode==="edit"){
+    exercise.id=program[programDay].exercises[editingIndex].id;
+    program[programDay].exercises[editingIndex]=exercise;
+  }else{
+    program[programDay].exercises.push(exercise);
+  }
+
+  saveAll();
+  closeModal("editModal");
+  renderProgram();
+  renderWorkout();
+};
+
+
+/* =========================================================
+   RESET DAY
+========================================================= */
+
+document.getElementById("resetDayBtn").onclick=()=>{
+
+  if(!confirm(
+    "Reset Day "+(programDay+1)+" to the original workout?"
+  )) return;
+
+  program[programDay]=clone(ORIGINAL_PROGRAM[programDay]);
+
+  saveAll();
+  renderProgram();
+  renderWorkout();
+};
+
+
+/* =========================================================
+   HISTORY
+========================================================= */
+
+function renderHistory(){
+
+  const wrap=document.getElementById("historyList");
+
+  if(!history.length){
+    wrap.innerHTML=
+      '<div class="empty">Finish your first workout and it will show up here.</div>';
+    return;
+  }
+
+  wrap.innerHTML="";
+
+  [...history].reverse().forEach(workout=>{
+
+    const date=new Date(workout.date);
+
+    const item=document.createElement("div");
+    item.className="history-item";
+
+    const totalSets=workout.exercises.reduce(
+      (sum,x)=>sum+x.sets.filter(s=>s.done).length,
+      0
+    );
+
+    item.innerHTML=`
+      <div class="history-title">${workout.dayName}</div>
+
+      <div class="history-meta">
+        ${date.toLocaleDateString()} ·
+        ${workout.exercises.length} exercises ·
+        ${totalSets} completed sets ·
+        ${formatTimer(workout.duration)}
+      </div>
+    `;
+
+    wrap.appendChild(item);
+  });
+}
+
+
+/* =========================================================
+   MODALS
+========================================================= */
+
+function openModal(id){
+  document.getElementById(id).classList.add("open");
+}
+
+function closeModal(id){
+  document.getElementById(id).classList.remove("open");
+}
+
+document.querySelectorAll("[data-close]").forEach(btn=>{
+  btn.onclick=()=>closeModal(btn.dataset.close);
+});
+
+document.querySelectorAll(".modal").forEach(modal=>{
+  modal.addEventListener("click",e=>{
+    if(e.target===modal) closeModal(modal.id);
+  });
+});
+
+
+/* =========================================================
+   INITIALIZE
+========================================================= */
+
+renderWorkout();
+renderProgram();
+renderHistory();
+paintTimer();
+
+</script>
+
+</body>
+</html>
