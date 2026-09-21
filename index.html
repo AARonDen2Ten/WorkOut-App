@@ -8,7 +8,7 @@
 <meta name="apple-mobile-web-app-title" content="Work Out">
 <meta name="theme-color" content="#111111">
 
-<title>Work Out V2</title>
+<title>Work Out V2.1</title>
 
 <style>
 * {
@@ -500,6 +500,28 @@ h2 {
   display: none;
 }
 
+
+.rest-display { font-size: 32px; font-weight: 850; letter-spacing: 1px; margin: 5px 0 12px; }
+.rest-presets, .history-tabs { display:flex; flex-wrap:wrap; gap:7px; margin:10px 0; }
+.rest-presets button.active, .history-tabs button.active { background:var(--black); color:white; }
+.toggle-row { display:flex; justify-content:space-between; align-items:center; gap:12px; margin-top:12px; padding-top:12px; border-top:1px solid var(--border); font-size:13px; font-weight:700; }
+.toggle-row input { width:22px; height:22px; }
+.target-box { margin-top:10px; padding-top:10px; border-top:1px solid #ddd; }
+.target-title { font-size:11px; font-weight:850; letter-spacing:.6px; margin-bottom:5px; }
+.best-line { margin-top:7px; font-weight:750; }
+.live-result { margin:10px 0 0; padding:10px 12px; border-radius:10px; background:#eef6ee; color:var(--green); font-size:12px; font-weight:800; display:none; }
+.history-tabs .btn { flex:1; }
+.history-item { cursor:pointer; }
+.history-details { display:none; padding:12px 0 2px; }
+.history-item.open .history-details { display:block; }
+.history-exercise { background:var(--light); border-radius:12px; padding:11px; margin-top:8px; }
+.history-exercise-name { font-weight:800; margin-bottom:5px; }
+.history-set { font-size:12px; color:#555; line-height:1.6; }
+.pr-card { border:1px solid var(--border); border-radius:14px; padding:13px; margin-bottom:10px; }
+.pr-name { font-weight:850; }
+.pr-best { font-size:18px; font-weight:850; margin:5px 0; }
+.pr-meta { font-size:12px; color:var(--gray); }
+
 @media(max-width: 430px) {
   .screen {
     padding: 14px;
@@ -528,7 +550,7 @@ h2 {
     <div class="header-top">
       <div>
         <div class="logo">WORK OUT</div>
-        <div class="version">V2 · CUSTOM TRAINING</div>
+        <div class="version">V2.1 · PROGRESSIVE TRAINING</div>
       </div>
       <div id="headerDayCount">0/5</div>
     </div>
@@ -558,6 +580,27 @@ h2 {
       </div>
     </div>
 
+    <div class="card">
+      <div class="section-label">Rest Timer</div>
+      <div class="rest-display" id="restDisplay">01:30</div>
+      <div class="rest-presets" id="restPresets">
+        <button class="btn outline small" data-rest="60">60 sec</button>
+        <button class="btn outline small active" data-rest="90">90 sec</button>
+        <button class="btn outline small" data-rest="120">2 min</button>
+        <button class="btn outline small" data-rest="180">3 min</button>
+      </div>
+      <div class="button-row">
+        <button class="btn outline small" id="restMinus">−15 sec</button>
+        <button class="btn" id="restToggle">Start</button>
+        <button class="btn outline small" id="restPlus">+15 sec</button>
+        <button class="btn secondary small" id="restReset">Reset</button>
+      </div>
+      <label class="toggle-row">
+        <span>Auto-start after completed set</span>
+        <input type="checkbox" id="autoRest" checked>
+      </label>
+    </div>
+
     <div class="day-tabs" id="workoutDayTabs"></div>
 
     <div class="card">
@@ -577,6 +620,7 @@ h2 {
       <div class="exercise-meta" id="exerciseMeta"></div>
 
       <div class="last-time" id="lastTime"></div>
+      <div class="live-result" id="liveResult"></div>
 
       <div id="setsContainer"></div>
 
@@ -656,7 +700,12 @@ h2 {
     </div>
 
     <div class="card">
+      <div class="history-tabs">
+        <button class="btn active" id="historyWorkoutsTab">WORKOUTS</button>
+        <button class="btn outline" id="historyPRsTab">PRs</button>
+      </div>
       <div id="historyList"></div>
+      <div id="prList" style="display:none"></div>
     </div>
 
   </section>
@@ -1061,8 +1110,13 @@ document.querySelectorAll(".nav button").forEach(btn=>{
    TIMER
 ========================================================= */
 
-let timerSeconds = 0;
+let timerSeconds = Number(localStorage.getItem("workoutV2_timerSeconds")) || 0;
 let timerInterval = null;
+let restDefault = Number(localStorage.getItem("workoutV2_restDefault")) || 90;
+let restSeconds = Number(localStorage.getItem("workoutV2_restSeconds"));
+if(!Number.isFinite(restSeconds) || restSeconds < 0) restSeconds = restDefault;
+let restInterval = null;
+let autoRestEnabled = localStorage.getItem("workoutV2_autoRest") !== "false";
 
 function formatTimer(s){
   const h=Math.floor(s/3600);
@@ -1083,6 +1137,7 @@ document.getElementById("timerStart").onclick=()=>{
 
   timerInterval=setInterval(()=>{
     timerSeconds++;
+    localStorage.setItem("workoutV2_timerSeconds",timerSeconds);
     paintTimer();
   },1000);
 };
@@ -1096,9 +1151,51 @@ document.getElementById("timerReset").onclick=()=>{
   clearInterval(timerInterval);
   timerInterval=null;
   timerSeconds=0;
+  localStorage.setItem("workoutV2_timerSeconds",0);
   paintTimer();
 };
 
+
+/* =========================================================
+   REST TIMER
+========================================================= */
+function formatRest(s){
+  const m=Math.floor(s/60);
+  const sec=s%60;
+  return String(m).padStart(2,"0")+":"+String(sec).padStart(2,"0");
+}
+function paintRest(){
+  document.getElementById("restDisplay").textContent=formatRest(restSeconds);
+  document.getElementById("restToggle").textContent=restInterval ? "Pause" : "Start";
+  document.querySelectorAll("[data-rest]").forEach(b=>b.classList.toggle("active",Number(b.dataset.rest)===restDefault));
+  localStorage.setItem("workoutV2_restSeconds",restSeconds);
+}
+function stopRest(){ clearInterval(restInterval); restInterval=null; paintRest(); }
+function startRest(reset=true){
+  stopRest();
+  if(reset) restSeconds=restDefault;
+  if(restSeconds<=0) restSeconds=restDefault;
+  restInterval=setInterval(()=>{
+    restSeconds=Math.max(0,restSeconds-1); paintRest();
+    if(restSeconds===0){
+      stopRest();
+      const d=document.getElementById("restDisplay");
+      d.textContent="REST COMPLETE";
+      if(navigator.vibrate) navigator.vibrate([150,80,150]);
+    }
+  },1000);
+  paintRest();
+}
+document.querySelectorAll("[data-rest]").forEach(b=>b.onclick=()=>{
+  restDefault=Number(b.dataset.rest); restSeconds=restDefault;
+  localStorage.setItem("workoutV2_restDefault",restDefault); stopRest();
+});
+document.getElementById("restToggle").onclick=()=>{ restInterval ? stopRest() : startRest(false); };
+document.getElementById("restMinus").onclick=()=>{ restSeconds=Math.max(0,restSeconds-15); paintRest(); };
+document.getElementById("restPlus").onclick=()=>{ restSeconds=Math.min(3600,restSeconds+15); paintRest(); };
+document.getElementById("restReset").onclick=()=>{ stopRest(); restSeconds=restDefault; paintRest(); };
+document.getElementById("autoRest").checked=autoRestEnabled;
+document.getElementById("autoRest").onchange=e=>{ autoRestEnabled=e.target.checked; localStorage.setItem("workoutV2_autoRest",autoRestEnabled); };
 
 /* =========================================================
    WORKOUT HELPERS
@@ -1193,6 +1290,7 @@ function renderWorkout(){
 
   renderLastTime(exercise);
   renderSets(exercise);
+  renderLiveResult(exercise);
 }
 
 function renderWorkoutDays(){
@@ -1261,8 +1359,10 @@ function renderSets(exercise){
     };
 
     check.onclick=()=>{
-      set.done=!set.done;
+      const becomingDone=!set.done;
+      set.done=becomingDone;
       saveAll();
+      if(becomingDone && autoRestEnabled) startRest(true);
       renderWorkout();
     };
 
@@ -1277,38 +1377,60 @@ function renderSets(exercise){
    LAST TIME
 ========================================================= */
 
+function getExerciseHistory(name){
+  const out=[];
+  history.forEach(workout=>{
+    workout.exercises.filter(x=>x.name===name).forEach(ex=>out.push({workout,exercise:ex}));
+  });
+  return out;
+}
+function bestSetFor(name){
+  let best=null;
+  getExerciseHistory(name).forEach(entry=>entry.exercise.sets.filter(s=>s.done).forEach(s=>{
+    const w=Number(s.weight)||0, r=Number(s.reps)||0;
+    if(!best || w>best.weight || (w===best.weight && r>best.reps)) best={weight:w,reps:r,date:entry.workout.date};
+  }));
+  return best;
+}
 function renderLastTime(exercise){
-
   const box=document.getElementById("lastTime");
-
-  let previous=null;
-
-  for(let i=history.length-1;i>=0;i--){
-
-    const match=history[i].exercises.find(x=>x.name===exercise.name);
-
-    if(match){
-      previous=match;
-      break;
-    }
-  }
-
+  const entries=getExerciseHistory(exercise.name);
+  const previous=entries.length ? entries[entries.length-1] : null;
+  const best=bestSetFor(exercise.name);
   if(!previous){
-    box.innerHTML="<strong>LAST TIME</strong>No previous workout logged yet.";
+    box.innerHTML="<strong>LAST TIME</strong>No previous workout logged yet.<div class='target-box'><div class='target-title'>TODAY'S TARGET</div>Set your baseline today. Your next workout will have something to beat.</div>";
     return;
   }
-
-  const lines=previous.sets
-    .filter(x=>x.weight || x.reps)
-    .map((x,i)=>
-      `Set ${i+1}: ${x.weight || "—"} lb × ${x.reps || "—"}`
-    );
-
-  box.innerHTML=
-    "<strong>LAST TIME</strong>"+
-    (lines.length ? lines.join("<br>") : "No set data recorded.");
+  const lines=previous.exercise.sets.filter(x=>x.weight || x.reps).map((x,i)=>`Set ${i+1}: ${x.weight || "—"} lb × ${x.reps || "—"}`);
+  const date=new Date(previous.workout.date).toLocaleDateString();
+  const prevDone=previous.exercise.sets.filter(s=>s.done && (s.weight || s.reps));
+  let target="Match your last workout, then add a rep or weight while staying in your programmed rep range.";
+  if(prevDone.length){
+    const top=[...prevDone].sort((a,b)=>(Number(b.weight)||0)-(Number(a.weight)||0) || (Number(b.reps)||0)-(Number(a.reps)||0))[0];
+    target=`Beat ${top.weight || "—"} lb × ${top.reps || "—"}: add a rep at the same weight, or increase weight while staying in ${exercise.reps} reps.`;
+  }
+  box.innerHTML=`<strong>LAST TIME · ${date}</strong>${lines.length?lines.join("<br>"):"No set data recorded."}${best?`<div class="best-line">🏆 BEST: ${best.weight} lb × ${best.reps}</div>`:""}<div class="target-box"><div class="target-title">TODAY'S TARGET</div>🎯 ${target}</div>`;
 }
-
+function renderLiveResult(exercise){
+  const box=document.getElementById("liveResult");
+  const log=ensureLog(currentDay,currentExercise,exercise.sets);
+  const best=bestSetFor(exercise.name);
+  const previousEntries=getExerciseHistory(exercise.name);
+  const previous=previousEntries.length ? previousEntries[previousEntries.length-1].exercise : null;
+  let messages=[];
+  log.sets.slice(0,exercise.sets).forEach((s,i)=>{
+    if(!s.done) return;
+    const w=Number(s.weight)||0, r=Number(s.reps)||0;
+    if(best && (w>best.weight || (w===best.weight && r>best.reps))) messages.push(`🏆 Set ${i+1}: NEW PR · ${w} lb × ${r}`);
+    else if(previous && previous.sets[i]){
+      const p=previous.sets[i], pw=Number(p.weight)||0, pr=Number(p.reps)||0;
+      if(w>pw) messages.push(`✓ Set ${i+1}: +${w-pw} lb vs. last time`);
+      else if(w===pw && r>pr) messages.push(`✓ Set ${i+1}: +${r-pr} rep${r-pr===1?"":"s"} vs. last time`);
+    }
+  });
+  box.style.display=messages.length?"block":"none";
+  box.innerHTML=messages.join("<br>");
+}
 
 /* =========================================================
    WORKOUT CONTROLS
@@ -1378,7 +1500,9 @@ document.getElementById("finishWorkoutBtn").onclick=()=>{
   clearInterval(timerInterval);
   timerInterval=null;
   timerSeconds=0;
+  localStorage.setItem("workoutV2_timerSeconds",0);
   paintTimer();
+  stopRest(); restSeconds=restDefault; paintRest();
 
   saveAll();
   updateWeekly();
@@ -1840,45 +1964,49 @@ document.getElementById("resetDayBtn").onclick=()=>{
    HISTORY
 ========================================================= */
 
+let historyView="workouts";
+document.getElementById("historyWorkoutsTab").onclick=()=>{ historyView="workouts"; renderHistory(); };
+document.getElementById("historyPRsTab").onclick=()=>{ historyView="prs"; renderHistory(); };
 function renderHistory(){
-
-  const wrap=document.getElementById("historyList");
-
-  if(!history.length){
-    wrap.innerHTML=
-      '<div class="empty">Finish your first workout and it will show up here.</div>';
-    return;
-  }
-
-  wrap.innerHTML="";
-
+  const workouts=document.getElementById("historyList");
+  const prs=document.getElementById("prList");
+  const wt=document.getElementById("historyWorkoutsTab"), pt=document.getElementById("historyPRsTab");
+  wt.className="btn "+(historyView==="workouts"?"active":"outline");
+  pt.className="btn "+(historyView==="prs"?"active":"outline");
+  workouts.style.display=historyView==="workouts"?"block":"none";
+  prs.style.display=historyView==="prs"?"block":"none";
+  if(historyView==="prs"){ renderPRs(); return; }
+  if(!history.length){ workouts.innerHTML='<div class="empty">Finish your first workout and it will show up here.</div>'; return; }
+  workouts.innerHTML="";
   [...history].reverse().forEach(workout=>{
-
     const date=new Date(workout.date);
-
-    const item=document.createElement("div");
-    item.className="history-item";
-
-    const totalSets=workout.exercises.reduce(
-      (sum,x)=>sum+x.sets.filter(s=>s.done).length,
-      0
-    );
-
-    item.innerHTML=`
-      <div class="history-title">${workout.dayName}</div>
-
-      <div class="history-meta">
-        ${date.toLocaleDateString()} ·
-        ${workout.exercises.length} exercises ·
-        ${totalSets} completed sets ·
-        ${formatTimer(workout.duration)}
-      </div>
-    `;
-
-    wrap.appendChild(item);
+    const item=document.createElement("div"); item.className="history-item";
+    const totalSets=workout.exercises.reduce((sum,x)=>sum+x.sets.filter(s=>s.done).length,0);
+    const details=workout.exercises.map(ex=>{
+      const sets=ex.sets.map((s,i)=>`<div class="history-set">Set ${i+1}: ${s.weight||"—"} lb × ${s.reps||"—"} ${s.done?"✓":""}</div>`).join("");
+      return `<div class="history-exercise"><div class="history-exercise-name">${ex.name}</div>${sets}</div>`;
+    }).join("");
+    item.innerHTML=`<div class="history-title">${workout.dayName} <span style="float:right">⌄</span></div><div class="history-meta">${date.toLocaleDateString()} · ${workout.exercises.length} exercises · ${totalSets} completed sets · ${formatTimer(workout.duration)}</div><div class="history-details">${details}</div>`;
+    item.onclick=()=>item.classList.toggle("open");
+    workouts.appendChild(item);
   });
 }
-
+function renderPRs(){
+  const wrap=document.getElementById("prList");
+  const names=[...new Set(history.flatMap(w=>w.exercises.map(e=>e.name)))].sort();
+  if(!names.length){ wrap.innerHTML='<div class="empty">Your PRs will appear after you finish workouts with weight and reps logged.</div>'; return; }
+  const cards=[];
+  names.forEach(name=>{
+    const best=bestSetFor(name); if(!best) return;
+    const entries=getExerciseHistory(name);
+    const recent=entries.slice(-5).reverse().map(e=>{
+      const bestIn=e.exercise.sets.filter(s=>s.done).sort((a,b)=>(Number(b.weight)||0)-(Number(a.weight)||0) || (Number(b.reps)||0)-(Number(a.reps)||0))[0];
+      return bestIn ? `<div class="history-set">${new Date(e.workout.date).toLocaleDateString()}: ${bestIn.weight||"—"} lb × ${bestIn.reps||"—"}</div>` : "";
+    }).join("");
+    cards.push(`<div class="pr-card"><div class="pr-name">${name}</div><div class="pr-best">🏆 ${best.weight} lb × ${best.reps}</div><div class="pr-meta">Best recorded ${new Date(best.date).toLocaleDateString()}</div><div style="margin-top:9px"><strong style="font-size:11px">RECENT PROGRESS</strong>${recent}</div></div>`);
+  });
+  wrap.innerHTML=cards.length?cards.join(""):'<div class="empty">Complete sets with weight and reps to build your PR board.</div>';
+}
 
 /* =========================================================
    MODALS
@@ -1911,6 +2039,7 @@ renderWorkout();
 renderProgram();
 renderHistory();
 paintTimer();
+paintRest();
 
 </script>
 
