@@ -697,6 +697,9 @@ h2 {
       <p class="subtle">
         Completed sessions and previous performance live here.
       </p>
+      <div class="button-row">
+        <button class="btn outline" id="backupDataBtn">Backup My Data</button>
+      </div>
     </div>
 
     <div class="card">
@@ -1085,6 +1088,26 @@ function saveAll(){
   localStorage.setItem("workoutV2_current",JSON.stringify(currentLog));
   localStorage.setItem("workoutV2_completedDays",JSON.stringify(completedDays));
   localStorage.setItem("workoutV2_swaps",JSON.stringify(temporarySwaps));
+}
+
+
+function backupWorkoutData(){
+  saveAll();
+  const data={};
+  for(let i=0;i<localStorage.length;i++){
+    const key=localStorage.key(i);
+    if(key && key.startsWith("workoutV2_")) data[key]=localStorage.getItem(key);
+  }
+  const backup={app:"Work Out",version:"2.1",exportedAt:new Date().toISOString(),data};
+  const blob=new Blob([JSON.stringify(backup,null,2)],{type:"application/json"});
+  const url=URL.createObjectURL(blob);
+  const link=document.createElement("a");
+  link.href=url;
+  link.download="workout-backup-"+new Date().toISOString().slice(0,10)+".json";
+  document.body.appendChild(link);
+  link.click();
+  link.remove();
+  setTimeout(()=>URL.revokeObjectURL(url),1000);
 }
 
 
@@ -2034,6 +2057,8 @@ document.querySelectorAll(".modal").forEach(modal=>{
 /* =========================================================
    INITIALIZE
 ========================================================= */
+
+document.getElementById("backupDataBtn").onclick=backupWorkoutData;
 
 renderWorkout();
 renderProgram();
